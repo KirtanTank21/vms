@@ -1,24 +1,12 @@
 import os
-from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from supabase import create_client
 from routers import push, notify
 
 load_dotenv()
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    app.state.db = create_client(
-        os.environ["SUPABASE_URL"],
-        os.environ["SUPABASE_SERVICE_ROLE_KEY"],
-    )
-    yield
-
-
-app = FastAPI(title="VMS API", lifespan=lifespan)
+app = FastAPI(title="VMS API")
 
 app.add_middleware(
     CORSMiddleware,

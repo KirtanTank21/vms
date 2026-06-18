@@ -1,8 +1,10 @@
 import json
 import os
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Depends
 from pywebpush import webpush, WebPushException
+from supabase import Client
 from models import NotifyCheckinRequest
+from deps import get_db
 
 router = APIRouter(prefix="/notify", tags=["notify"])
 
@@ -11,16 +13,13 @@ VAPID_CLAIM_EMAIL = os.getenv("VAPID_CLAIM_EMAIL")
 
 
 @router.post("/checkin", status_code=204)
-async def notify_checkin(body: NotifyCheckinRequest, request: Request):
-    db = request.app.state.db
-
+async def notify_checkin(body: NotifyCheckinRequest, db: Client = Depends(get_db)):
     result = db.table("users").select("push_subscription").eq("id", body.host_id).single().execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Host not found")
 
     subscription = result.data.get("push_subscription")
     if not subscription:
-        # Host hasn't granted push permission — silently succeed
         return
 
     location = f" at {body.property_name}" if body.property_name else ""
@@ -38,7 +37,6 @@ async def notify_checkin(body: NotifyCheckinRequest, request: Request):
             vapid_claims={"sub": VAPID_CLAIM_EMAIL},
         )
     except WebPushException as e:
-        # 410 Gone means subscription is expired — clean it up
         if e.response and e.response.status_code == 410:
             db.table("users").update({"push_subscription": None}).eq("id", body.host_id).execute()
         else:
