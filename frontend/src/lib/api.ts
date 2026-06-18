@@ -1,6 +1,8 @@
 import { supabase } from "./supabase";
 import type { Visitor, BadgeData } from "../types";
 
+const API_URL = import.meta.env.VITE_API_URL as string;
+
 function generateBadgeNumber(): string {
   return "VMS-" + Math.random().toString(36).substring(2, 8).toUpperCase();
 }
@@ -22,7 +24,21 @@ export async function checkIn(payload: {
     .single();
 
   if (error) throw new Error(error.message);
-  return data as Visitor;
+  const visitor = data as Visitor;
+
+  if (visitor.host_id) {
+    fetch(`${API_URL}/notify/checkin`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        visitor_id: visitor.id,
+        visitor_name: visitor.name,
+        host_id: visitor.host_id,
+      }),
+    }).catch(console.error);
+  }
+
+  return visitor;
 }
 
 export async function checkOut(visitorId: string): Promise<void> {

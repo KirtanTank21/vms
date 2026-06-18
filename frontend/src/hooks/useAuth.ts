@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { registerPush, unregisterPush } from "../lib/push";
 import type { UserProfile } from "../types";
 
 export function useAuth() {
@@ -36,11 +37,19 @@ export function useAuth() {
       .select("id, name, role, property_id")
       .eq("id", userId)
       .single();
-    setProfile(data as UserProfile | null);
+    const profile = data as UserProfile | null;
+    setProfile(profile);
     setLoading(false);
+
+    if (profile?.role === "host") {
+      registerPush(profile.id).catch(console.error);
+    }
   }
 
   async function signOut() {
+    if (profile?.role === "host") {
+      unregisterPush(profile.id).catch(console.error);
+    }
     await supabase.auth.signOut();
   }
 

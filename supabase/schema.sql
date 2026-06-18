@@ -13,12 +13,13 @@ create table if not exists properties (
 -- role: guard | host | admin
 -- ============================================================
 create table if not exists users (
-  id          uuid primary key references auth.users(id) on delete cascade,
-  email       text not null,
-  name        text not null,
-  role        text not null check (role in ('guard', 'host', 'admin')),
-  property_id uuid references properties(id),
-  created_at  timestamptz not null default now()
+  id                uuid primary key references auth.users(id) on delete cascade,
+  email             text not null,
+  name              text not null,
+  role              text not null check (role in ('guard', 'host', 'admin')),
+  property_id       uuid references properties(id),
+  push_subscription jsonb,
+  created_at        timestamptz not null default now()
 );
 
 create or replace function public.handle_new_user()
