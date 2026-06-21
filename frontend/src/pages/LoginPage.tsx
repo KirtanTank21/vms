@@ -4,11 +4,8 @@ import { supabase } from "../lib/supabase";
 const PHONE_DOMAIN = "@vms.local";
 
 export function normalizePhone(input: string): string {
-  // Strip everything except digits
   let digits = input.replace(/\D/g, "");
-  // Strip leading 91 if it makes 12 digits (Indian country code)
   if (digits.length === 12 && digits.startsWith("91")) digits = digits.slice(2);
-  // Strip leading 0 if 11 digits (some people type 09876...)
   if (digits.length === 11 && digits.startsWith("0")) digits = digits.slice(1);
   return digits;
 }
@@ -39,38 +36,42 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">VMS</h1>
-        <p className="text-sm text-gray-500 mb-6">Visitor Management System</p>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="label">Phone Number</label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="input-field"
-              placeholder="e.g. 9876543210"
-              required
-              autoFocus
-            />
-          </div>
-          <div>
-            <label className="label">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
-              required
-            />
-          </div>
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-          <button type="submit" disabled={loading} className="btn-primary">
-            {loading ? "Signing in…" : "Sign in"}
-          </button>
-        </form>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-blue-600">VMS</h1>
+          <p className="text-sm text-gray-500 mt-1">Visitor Management System</p>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div>
+              <label className="label">Phone Number</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="input-field"
+                placeholder="e.g. 9876543210"
+                required
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="label">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-field"
+                required
+              />
+            </div>
+            {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+            <button type="submit" disabled={loading} className="btn-primary mt-1">
+              {loading ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

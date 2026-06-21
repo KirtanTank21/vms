@@ -29,9 +29,9 @@ export function VisitorRow({ visitor, onCheckedOut }: Props) {
       <td className="py-3 px-4">
         <div className="flex items-center gap-3">
           {visitor.photo_url ? (
-            <img src={visitor.photo_url} alt="" className="w-9 h-9 rounded-full object-cover" />
+            <img src={visitor.photo_url} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm font-medium">
+            <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm font-medium shrink-0">
               {visitor.name[0].toUpperCase()}
             </div>
           )}
@@ -45,11 +45,7 @@ export function VisitorRow({ visitor, onCheckedOut }: Props) {
       <td className="py-3 px-4 text-sm text-gray-500">{visitor.purpose ?? "—"}</td>
       <td className="py-3 px-4 text-sm text-gray-500">{formatTime(visitor.checked_in_at)}</td>
       <td className="py-3 px-4">
-        <button
-          onClick={handleCheckout}
-          disabled={loading}
-          className="btn-danger"
-        >
+        <button onClick={handleCheckout} disabled={loading} className="btn-danger">
           {loading ? "..." : "Check out"}
         </button>
       </td>

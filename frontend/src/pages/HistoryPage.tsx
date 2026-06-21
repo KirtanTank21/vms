@@ -70,102 +70,120 @@ export function HistoryPage({ profile }: Props) {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-5">Visit History</h2>
-      <div className="flex flex-wrap gap-3 mb-4">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">Visit History</h2>
+
+      {/* Filters */}
+      <div className="flex flex-col gap-2 mb-4">
         <input
           type="text"
           placeholder="Search visitor or host…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="input-field max-w-xs"
+          className="input-field"
         />
-        <input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => { setDateFrom(e.target.value); setPage(0); }}
-          className="input-field w-auto"
-        />
-        <span className="self-center text-gray-500 text-sm">to</span>
-        <input
-          type="date"
-          value={dateTo}
-          onChange={(e) => { setDateTo(e.target.value); setPage(0); }}
-          className="input-field w-auto"
-        />
-        {(dateFrom || dateTo) && (
-          <button
-            onClick={() => { setDateFrom(""); setDateTo(""); setPage(0); }}
-            className="btn-secondary text-sm"
-          >
-            Clear
-          </button>
-        )}
+        <div className="flex gap-2 items-center">
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => { setDateFrom(e.target.value); setPage(0); }}
+            className="input-field"
+          />
+          <span className="text-gray-400 text-sm shrink-0">to</span>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => { setDateTo(e.target.value); setPage(0); }}
+            className="input-field"
+          />
+          {(dateFrom || dateTo) && (
+            <button
+              onClick={() => { setDateFrom(""); setDateTo(""); setPage(0); }}
+              className="btn-secondary shrink-0"
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        {loading ? (
-          <p className="p-6 text-gray-500 text-sm">Loading…</p>
-        ) : filtered.length === 0 ? (
-          <p className="p-6 text-gray-500 text-sm">No records found.</p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="py-3 px-4 text-left font-medium text-gray-600">Visitor</th>
-                <th className="py-3 px-4 text-left font-medium text-gray-600">Host</th>
-                <th className="py-3 px-4 text-left font-medium text-gray-600">Purpose</th>
-                <th className="py-3 px-4 text-left font-medium text-gray-600">Check In</th>
-                <th className="py-3 px-4 text-left font-medium text-gray-600">Check Out</th>
-                <th className="py-3 px-4 text-left font-medium text-gray-600">Duration</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((v) => (
-                <tr key={v.id} className="border-b hover:bg-gray-50">
-                  <td className="py-3 px-4">
-                    <p className="font-medium text-gray-900">{v.name}</p>
-                    <p className="text-xs text-gray-500">{v.phone}</p>
-                  </td>
-                  <td className="py-3 px-4 text-gray-700">{v.host_name}</td>
-                  <td className="py-3 px-4 text-gray-500">{v.purpose ?? "—"}</td>
-                  <td className="py-3 px-4 text-gray-500">{formatDateTime(v.checked_in_at)}</td>
-                  <td className="py-3 px-4 text-gray-500">
-                    {v.checked_out_at ? formatDateTime(v.checked_out_at) : "—"}
-                  </td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={
-                        v.checked_out_at
-                          ? "text-gray-500"
-                          : "text-green-600 font-medium"
-                      }
-                    >
-                      {duration(v.checked_in_at, v.checked_out_at)}
-                    </span>
-                  </td>
+
+      {loading ? (
+        <p className="text-center text-gray-500 text-sm py-12">Loading…</p>
+      ) : filtered.length === 0 ? (
+        <div className="card p-8 text-center text-gray-500 text-sm">No records found.</div>
+      ) : (
+        <>
+          {/* Mobile cards */}
+          <div className="md:hidden flex flex-col gap-3">
+            {filtered.map((v) => (
+              <div key={v.id} className="card p-4">
+                <div className="flex items-start justify-between mb-1">
+                  <div>
+                    <p className="font-semibold text-gray-900">{v.name}</p>
+                    {v.phone && <p className="text-xs text-gray-400">{v.phone}</p>}
+                  </div>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${v.checked_out_at ? "bg-gray-100 text-gray-500" : "bg-green-100 text-green-700"}`}>
+                    {duration(v.checked_in_at, v.checked_out_at)}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">
+                  <span className="text-gray-400">Host:</span> {v.host_name}
+                </p>
+                {v.purpose && <p className="text-xs text-gray-400 mt-0.5">{v.purpose}</p>}
+                <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
+                  <span>In: {formatDateTime(v.checked_in_at)}</span>
+                  {v.checked_out_at && <span>Out: {formatDateTime(v.checked_out_at)}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="py-3 px-4 text-left font-medium text-gray-600">Visitor</th>
+                  <th className="py-3 px-4 text-left font-medium text-gray-600">Host</th>
+                  <th className="py-3 px-4 text-left font-medium text-gray-600">Purpose</th>
+                  <th className="py-3 px-4 text-left font-medium text-gray-600">Check In</th>
+                  <th className="py-3 px-4 text-left font-medium text-gray-600">Check Out</th>
+                  <th className="py-3 px-4 text-left font-medium text-gray-600">Duration</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+              </thead>
+              <tbody>
+                {filtered.map((v) => (
+                  <tr key={v.id} className="border-b hover:bg-gray-50">
+                    <td className="py-3 px-4">
+                      <p className="font-medium text-gray-900">{v.name}</p>
+                      <p className="text-xs text-gray-500">{v.phone}</p>
+                    </td>
+                    <td className="py-3 px-4 text-gray-700">{v.host_name}</td>
+                    <td className="py-3 px-4 text-gray-500">{v.purpose ?? "—"}</td>
+                    <td className="py-3 px-4 text-gray-500">{formatDateTime(v.checked_in_at)}</td>
+                    <td className="py-3 px-4 text-gray-500">
+                      {v.checked_out_at ? formatDateTime(v.checked_out_at) : "—"}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={v.checked_out_at ? "text-gray-500" : "text-green-600 font-medium"}>
+                        {duration(v.checked_in_at, v.checked_out_at)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
       {total > PAGE_SIZE && (
         <div className="flex items-center justify-between mt-4 text-sm text-gray-600">
-          <span>
-            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}
-          </span>
+          <span>{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}</span>
           <div className="flex gap-2">
-            <button
-              disabled={page === 0}
-              onClick={() => setPage((p) => p - 1)}
-              className="btn-secondary disabled:opacity-40"
-            >
+            <button disabled={page === 0} onClick={() => setPage((p) => p - 1)} className="btn-secondary disabled:opacity-40">
               Previous
             </button>
-            <button
-              disabled={(page + 1) * PAGE_SIZE >= total}
-              onClick={() => setPage((p) => p + 1)}
-              className="btn-secondary disabled:opacity-40"
-            >
+            <button disabled={(page + 1) * PAGE_SIZE >= total} onClick={() => setPage((p) => p + 1)} className="btn-secondary disabled:opacity-40">
               Next
             </button>
           </div>

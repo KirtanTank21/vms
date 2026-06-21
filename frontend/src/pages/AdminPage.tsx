@@ -43,7 +43,7 @@ export function AdminPage({ profile }: Props) {
       const json = await res.json();
       if (!res.ok) throw new Error(json.detail ?? "Failed to register user");
 
-      setSuccess(`${json.name} (${json.role}) registered successfully. Phone: ${json.phone}`);
+      setSuccess(`${json.name} (${json.role}) registered successfully.`);
       setForm(EMPTY_FORM);
     } catch (err: any) {
       setError(err.message);
@@ -53,12 +53,12 @@ export function AdminPage({ profile }: Props) {
   }
 
   return (
-    <div className="max-w-lg">
-      <h2 className="text-xl font-semibold text-gray-900 mb-1">Register Staff</h2>
-      <p className="text-sm text-gray-500 mb-5">
-        New staff are added to your property and can log in immediately with their phone number and password.
+    <div>
+      <h2 className="text-lg font-semibold text-gray-900 mb-1">Register Staff</h2>
+      <p className="text-sm text-gray-500 mb-4">
+        New staff can log in immediately with their phone number and password.
       </p>
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-6 flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="card p-4 flex flex-col gap-4">
         <div>
           <label className="label">Full Name *</label>
           <input
@@ -79,9 +79,7 @@ export function AdminPage({ profile }: Props) {
             className="input-field"
             placeholder="e.g. 9876543210"
           />
-          <p className="text-xs text-gray-400 mt-1">
-            10-digit number. Country code (+91) is handled automatically.
-          </p>
+          <p className="text-xs text-gray-400 mt-1">10-digit number. Country code (+91) handled automatically.</p>
         </div>
         <div>
           <label className="label">Password *</label>
@@ -94,9 +92,7 @@ export function AdminPage({ profile }: Props) {
             className="input-field"
             placeholder="Minimum 8 characters"
           />
-          <p className="text-xs text-gray-400 mt-1">
-            Share this with the staff member. They cannot reset it themselves.
-          </p>
+          <p className="text-xs text-gray-400 mt-1">Share this with the staff member.</p>
         </div>
         <div>
           <label className="label">Role *</label>
@@ -104,12 +100,10 @@ export function AdminPage({ profile }: Props) {
             <option value="guard">Guard / Security</option>
             <option value="host">Host / Employee</option>
           </select>
-          <p className="text-xs text-gray-400 mt-1">
-            Guards handle check-ins. Hosts receive notifications when their visitors arrive.
-          </p>
+          <p className="text-xs text-gray-400 mt-1">Guards handle check-ins. Hosts receive notifications when visitors arrive.</p>
         </div>
         {error && <p className="text-red-600 text-sm">{error}</p>}
-        {success && <p className="text-green-600 text-sm">{success}</p>}
+        {success && <p className="text-green-600 text-sm font-medium">{success}</p>}
         <button type="submit" disabled={loading} className="btn-primary">
           {loading ? "Registering…" : "Register Staff"}
         </button>

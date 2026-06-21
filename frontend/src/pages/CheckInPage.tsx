@@ -95,17 +95,17 @@ export function CheckInPage({ profile }: Props) {
   if (!profile) return null;
 
   return (
-    <div className="max-w-lg">
-      <h2 className="text-xl font-semibold text-gray-900 mb-5">New Visitor Check-In</h2>
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-6 flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-4">
+    <div>
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">New Visitor Check-In</h2>
+      <form onSubmit={handleSubmit} className="card p-4 flex flex-col gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="label">Visitor Name *</label>
-            <input value={form.name} onChange={set("name")} required className="input-field" />
+            <input value={form.name} onChange={set("name")} required className="input-field" placeholder="Full name" />
           </div>
           <div>
             <label className="label">Phone</label>
-            <input value={form.phone} onChange={set("phone")} className="input-field" />
+            <input type="tel" value={form.phone} onChange={set("phone")} className="input-field" placeholder="10-digit number" />
           </div>
         </div>
         <div>
@@ -113,9 +113,7 @@ export function CheckInPage({ profile }: Props) {
           <select value={form.host_id} onChange={set("host_id")} required className="input-field">
             <option value="">— select host —</option>
             {hosts.map((h) => (
-              <option key={h.id} value={h.id}>
-                {h.name}
-              </option>
+              <option key={h.id} value={h.id}>{h.name}</option>
             ))}
           </select>
           {hosts.length === 0 && (
@@ -124,14 +122,14 @@ export function CheckInPage({ profile }: Props) {
         </div>
         <div>
           <label className="label">Purpose of Visit</label>
-          <input value={form.purpose} onChange={set("purpose")} className="input-field" />
+          <input value={form.purpose} onChange={set("purpose")} className="input-field" placeholder="e.g. Meeting, Delivery" />
         </div>
         <div>
           <label className="label">Photo</label>
           <WebcamCapture onCapture={handleCapture} />
         </div>
         {error && <p className="text-red-600 text-sm">{error}</p>}
-        {success && <p className="text-green-600 text-sm">{success}</p>}
+        {success && <p className="text-green-600 text-sm font-medium">{success}</p>}
         <button type="submit" disabled={loading} className="btn-primary">
           {loading ? "Checking in…" : "Check In"}
         </button>
