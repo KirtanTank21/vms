@@ -30,7 +30,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={session ? <Navigate to={defaultRoute(profile?.role)} replace /> : <LoginPage />} />
         <Route path="/badge/:id" element={<BadgePrintPage />} />
         <Route element={<ProtectedRoute session={session} />}>
           <Route element={<Layout profile={profile} onSignOut={signOut} />}>
