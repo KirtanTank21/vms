@@ -24,18 +24,21 @@ export function WebcamCapture({ onCapture }: Props) {
         },
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
       setActive(true);
     } catch {
       setError("Camera access denied or not available. Please allow camera permission and try again.");
     }
   }
 
+  // Attach stream after video element renders
+  useEffect(() => {
+    if (active && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [active]);
+
   function handleVideoReady() {
     setReady(true);
-    videoRef.current?.play();
   }
 
   function stopStream() {
@@ -100,6 +103,7 @@ export function WebcamCapture({ onCapture }: Props) {
             ref={videoRef}
             onCanPlay={handleVideoReady}
             playsInline
+            autoPlay
             muted
             className="w-full object-cover"
             style={{ maxHeight: 320 }}
