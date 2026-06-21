@@ -9,7 +9,9 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("[auth] initialising — calling getSession");
     supabase.auth.getSession().then(({ data }) => {
+      console.log("[auth] getSession result:", data.session ? `session for ${data.session.user.email}` : "no session");
       setSession(data.session);
       if (data.session) {
         fetchProfile(data.session.user.id);
@@ -19,6 +21,7 @@ export function useAuth() {
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("[auth] onAuthStateChange event:", _event, session ? `user: ${session.user.email}` : "no session");
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
@@ -32,11 +35,13 @@ export function useAuth() {
   }, []);
 
   async function fetchProfile(userId: string) {
-    const { data } = await supabase
+    console.log("[auth] fetchProfile called for userId:", userId);
+    const { data, error } = await supabase
       .from("users")
       .select("id, name, role, property_id, properties(name)")
       .eq("id", userId)
       .single();
+    console.log("[auth] fetchProfile result — data:", data, "error:", error);
     const raw = data as any;
     const profile: UserProfile | null = raw
       ? {
@@ -47,6 +52,7 @@ export function useAuth() {
           property_name: raw.properties?.name ?? "",
         }
       : null;
+    console.log("[auth] profile built:", profile);
     setProfile(profile);
     setLoading(false);
 

@@ -27,11 +27,14 @@ export function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: toEmail(phone),
-      password,
-    });
-    if (error) setError("Incorrect phone number or password.");
+    const email = toEmail(phone);
+    console.log("[login] attempting sign-in with email:", email);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log("[login] signInWithPassword result — data:", data, "error:", error);
+    if (error) {
+      console.error("[login] sign-in failed:", error.message, error.status);
+      setError("Incorrect phone number or password.");
+    }
     setLoading(false);
   }
 
