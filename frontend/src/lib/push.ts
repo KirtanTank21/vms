@@ -1,3 +1,5 @@
+import { supabase } from "./supabase";
+
 const API_URL = import.meta.env.VITE_API_URL as string;
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string;
 
@@ -6,6 +8,11 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
   const raw = atob(base64);
   return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+}
+
+async function authHeader(): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return `Bearer ${session?.access_token ?? ""}`;
 }
 
 export async function registerPush(userId: string): Promise<void> {
@@ -25,7 +32,10 @@ export async function registerPush(userId: string): Promise<void> {
 
   await fetch(`${API_URL}/push/subscribe`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": await authHeader(),
+    },
     body: JSON.stringify({ user_id: userId, subscription }),
   });
 }
@@ -37,5 +47,8 @@ export async function unregisterPush(userId: string): Promise<void> {
   const subscription = await reg?.pushManager.getSubscription();
   if (subscription) await subscription.unsubscribe();
 
-  await fetch(`${API_URL}/push/subscribe?user_id=${userId}`, { method: "DELETE" });
+  await fetch(`${API_URL}/push/subscribe?user_id=${userId}`, {
+    method: "DELETE",
+    headers: { "Authorization": await authHeader() },
+  });
 }

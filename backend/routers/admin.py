@@ -1,8 +1,8 @@
 import re
-from fastapi import APIRouter, HTTPException, Header, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from supabase import Client
 from models import CreateUserRequest
-from deps import get_db
+from deps import get_db, get_caller_id
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -18,16 +18,8 @@ def normalize_phone(raw: str) -> str:
     return digits
 
 
-async def require_admin(authorization: str = Header(None), db: Client = Depends(get_db)):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    token = authorization.split(" ", 1)[1]
-    try:
-        resp = db.auth.get_user(token)
-        user_id = resp.user.id
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-    result = db.table("users").select("id, role, property_id").eq("id", user_id).single().execute()
+async def require_admin(caller_id: str = Depends(get_caller_id), db: Client = Depends(get_db)):
+    result = db.table("users").select("id, role, property_id").eq("id", caller_id).single().execute()
     if not result.data or result.data["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     return result.data
