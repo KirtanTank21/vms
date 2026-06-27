@@ -86,9 +86,12 @@ function NotificationBanner({ userId }: { userId: string }) {
   const [state, setState] = useState<"idle" | "enabling" | "done" | "denied">("idle");
 
   useEffect(() => {
-    if (Notification.permission === "granted") setState("done");
+    if (Notification.permission === "granted") {
+      setState("done");
+      registerPush(userId).catch(() => {}); // silently refresh subscription on every load
+    }
     if (Notification.permission === "denied") setState("denied");
-  }, []);
+  }, [userId]);
 
   if (state === "done" || state === "denied") return null;
 
