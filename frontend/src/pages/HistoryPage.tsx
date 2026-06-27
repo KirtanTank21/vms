@@ -34,7 +34,10 @@ export function HistoryPage({ profile }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!profile) return;
+    if (!profile?.property_id) {
+      setLoading(false);
+      return;
+    }
     fetchHistory();
   }, [profile, page, dateFrom, dateTo]);
 
@@ -143,8 +146,8 @@ export function HistoryPage({ profile }: Props) {
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="py-3 px-4 text-left font-medium text-gray-600">Visitor</th>
-                  <th className="py-3 px-4 text-left font-medium text-gray-600">Host</th>
-                  <th className="py-3 px-4 text-left font-medium text-gray-600">Purpose</th>
+                  <th className="py-3 px-4 text-left font-medium text-gray-600">Flat / Host</th>
+                  <th className="py-3 px-4 text-left font-medium text-gray-600">Status</th>
                   <th className="py-3 px-4 text-left font-medium text-gray-600">Check In</th>
                   <th className="py-3 px-4 text-left font-medium text-gray-600">Check Out</th>
                   <th className="py-3 px-4 text-left font-medium text-gray-600">Duration</th>
@@ -157,8 +160,19 @@ export function HistoryPage({ profile }: Props) {
                       <p className="font-medium text-gray-900">{v.name}</p>
                       <p className="text-xs text-gray-500">{v.phone}</p>
                     </td>
-                    <td className="py-3 px-4 text-gray-700">{v.host_name}</td>
-                    <td className="py-3 px-4 text-gray-500">{v.purpose ?? "—"}</td>
+                    <td className="py-3 px-4 text-gray-700">
+                      {v.unit_number && <span className="text-xs text-gray-400">Flat {v.unit_number} · </span>}
+                      {v.host_name}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        v.status === "approved" ? "bg-green-100 text-green-700"
+                        : v.status === "rejected" ? "bg-red-100 text-red-600"
+                        : "bg-amber-100 text-amber-700"
+                      }`}>
+                        {v.status}
+                      </span>
+                    </td>
                     <td className="py-3 px-4 text-gray-500">{formatDateTime(v.checked_in_at)}</td>
                     <td className="py-3 px-4 text-gray-500">
                       {v.checked_out_at ? formatDateTime(v.checked_out_at) : "—"}

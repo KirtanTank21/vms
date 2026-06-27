@@ -4,12 +4,27 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(data.title ?? "VMS Alert", {
       body: data.body ?? "",
       icon: "/vite.svg",
-      data: { visitor_id: data.visitor_id },
+      badge: "/vite.svg",
+      data: { url: data.url ?? "/my-visitors" },
+      vibrate: data.vibrate ?? [200, 100, 200],
+      requireInteraction: true,
     })
   );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  event.waitUntil(clients.openWindow("/my-visitors"));
+  const url = event.notification.data?.url ?? "/my-visitors";
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ("focus" in client) {
+          client.focus();
+          if ("navigate" in client) client.navigate(url);
+          return;
+        }
+      }
+      return clients.openWindow(url);
+    })
+  );
 });

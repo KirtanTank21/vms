@@ -28,6 +28,14 @@ export function ActiveVisitorsPage({ profile }: Props) {
 
   if (!profile) return null;
 
+  if (!profile.property_id) {
+    return (
+      <div className="card p-8 text-center text-gray-500 text-sm">
+        Your account is not linked to a building yet. Ask your admin to set this up.
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">

@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../lib/supabase";
-import { registerPush, unregisterPush } from "../lib/push";
+import { unregisterPush } from "../lib/push";
 import type { UserProfile } from "../types";
 
 export function useAuth() {
@@ -8,10 +8,41 @@ export function useAuth() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchProfile = useCallback(async (userId: string) => {
+    const { data: userData } = await supabase
+      .from("users")
+      .select("id, name, role, property_id")
+      .eq("id", userId)
+      .single();
+
+    let propertyName = "";
+    if (userData?.property_id) {
+      const { data: propData } = await supabase
+        .from("properties")
+        .select("name")
+        .eq("id", userData.property_id)
+        .single();
+      propertyName = propData?.name ?? "";
+    }
+
+    const built: UserProfile | null = userData
+      ? {
+          id: userData.id,
+          name: userData.name,
+          role: userData.role,
+          property_id: userData.property_id ?? null,
+          property_name: propertyName,
+        }
+      : null;
+
+    setProfile(built);
+    setLoading(false);
+
+    // Push registration is triggered by the user clicking "Enable" in the dashboard
+  }, []);
+
   useEffect(() => {
-    console.log("[auth] initialising — calling getSession");
     supabase.auth.getSession().then(({ data }) => {
-      console.log("[auth] getSession result:", data.session ? `session for ${data.session.user.email}` : "no session");
       setSession(data.session);
       if (data.session) {
         fetchProfile(data.session.user.id);
@@ -21,7 +52,6 @@ export function useAuth() {
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("[auth] onAuthStateChange event:", _event, session ? `user: ${session.user.email}` : "no session");
       setSession(session);
       if (session) {
         fetchProfile(session.user.id);
@@ -32,33 +62,11 @@ export function useAuth() {
     });
 
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [fetchProfile]);
 
-  async function fetchProfile(userId: string) {
-    console.log("[auth] fetchProfile called for userId:", userId);
-    const { data, error } = await supabase
-      .from("users")
-      .select("id, name, role, property_id, properties(name)")
-      .eq("id", userId)
-      .single();
-    console.log("[auth] fetchProfile result — data:", data, "error:", error);
-    const raw = data as any;
-    const profile: UserProfile | null = raw
-      ? {
-          id: raw.id,
-          name: raw.name,
-          role: raw.role,
-          property_id: raw.property_id,
-          property_name: raw.properties?.name ?? "",
-        }
-      : null;
-    console.log("[auth] profile built:", profile);
-    setProfile(profile);
-    setLoading(false);
-
-    if (profile?.role === "host") {
-      registerPush(profile.id).catch(console.error);
-    }
+  async function refreshProfile() {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) await fetchProfile(data.session.user.id);
   }
 
   async function signOut() {
@@ -68,5 +76,5 @@ export function useAuth() {
     await supabase.auth.signOut();
   }
 
-  return { session, profile, loading, signOut };
+  return { session, profile, loading, signOut, refreshProfile };
 }

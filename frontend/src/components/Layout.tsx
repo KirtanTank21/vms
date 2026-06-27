@@ -12,12 +12,11 @@ export function Layout({ profile, onSignOut }: Props) {
 
   const navLinks = [
     ...(isGuardOrAdmin ? [
-      { to: "/checkin", label: "Check In" },
       { to: "/active", label: "Active" },
       { to: "/history", label: "History" },
     ] : []),
     ...(isHostOrAdmin ? [{ to: "/my-visitors", label: "My Visitors" }] : []),
-    ...(profile?.role === "admin" ? [{ to: "/admin", label: "Staff" }] : []),
+    ...(profile?.role === "admin" ? [{ to: "/admin", label: "Admin" }] : []),
   ];
 
   return (

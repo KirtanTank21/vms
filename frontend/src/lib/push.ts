@@ -40,6 +40,30 @@ export async function registerPush(userId: string): Promise<void> {
   });
 }
 
+export async function subscribeVisitorPush(visitorId: string): Promise<"granted" | "denied" | "unsupported"> {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return "unsupported";
+
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") return "denied";
+
+  const reg = await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.ready;
+
+  const existing = await reg.pushManager.getSubscription();
+  const subscription = existing ?? await reg.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
+  });
+
+  await fetch(`${API_URL}/visit/${visitorId}/push-subscribe`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subscription: subscription.toJSON() }),
+  });
+
+  return "granted";
+}
+
 export async function unregisterPush(userId: string): Promise<void> {
   if (!("serviceWorker" in navigator)) return;
 

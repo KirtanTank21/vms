@@ -7,13 +7,17 @@ export function useActiveVisitors(propertyId: string | null) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!propertyId) return;
+    if (!propertyId) {
+      setLoading(false);
+      return;
+    }
 
     async function fetch() {
       const { data } = await supabase
         .from("visitors")
         .select("*")
         .eq("property_id", propertyId)
+        .eq("status", "approved")
         .is("checked_out_at", null)
         .order("checked_in_at", { ascending: false });
       setVisitors((data as Visitor[]) ?? []);
